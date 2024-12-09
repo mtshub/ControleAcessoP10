@@ -1,0 +1,8 @@
+ID    | RF_ID      | Nome                           | Email                          | Telefone         | Matrícula        | Cargo
+1     | 987422     | Tatiana                        | tatiana@gmail.com              | (11) 9 1234-9876 | 10256677         | AQV
+2     | 332521     | Denise                         | denise@gmail.com               | (11) 9 9876-1234 | 98533522         | Coordenador(a)
+3     | 032645     | Paulo                          | paulo@gmail.com                | (11) 9 8766-1010 | 75121401         | Coordenador(a)
+4     | 978231     | Rafael Costa                   | rafaelcost@gmail.com           | (11) 9 5545-9014 | 01458999         | Professor(a)
+5     | 610003     | Ricardo Orrico                 | orricardo@gmail.com            | (19) 9 7856-4141 | 25014987         | Professor(a)
+6     | 325688     | Paulo Roberto                  | paulobert@gmail.com            | (11) 9 3299-8766 | 78789100         | Professor(a)
+7     | 102110     | Lucas Felfoldi                 | felfolucas@gmail.com.br        | (15) 9 8888-7777 | 26332881         | Professor(a)

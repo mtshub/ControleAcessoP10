@@ -540,7 +540,7 @@ public class ControleAcessoSenai {
         }
     }
 
-    private static Boolean cadastroNulo(String[][] cadastro) {
+    private static boolean cadastroNulo(String[][] cadastro) {
         boolean nulo = cadastro.length < 2;
         if (nulo) {
             if (cadastro[0].length == cadastroFuncionarios[0].length) {
