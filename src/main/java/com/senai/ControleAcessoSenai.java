@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class ControleAcessoSenai {
+    private static String[] registrosRfID = {null};
     private static String[] matriculas = {null};
     private static final String[] cabecalhoAluno = {"ID", "RF_ID", "Nome", "Email", "Telefone", "Matrícula"};
     private static String[][] cadastroAlunos = {null};
@@ -25,6 +26,7 @@ public class ControleAcessoSenai {
     private static final File arquivoRegistrosDeAcesso = new File(pastaRegistrosDeAcesso + "\\RegistrosDeAcesso.txt");
     private static final File pastaMatriculas = new File(dirBaseDeDadosGeral + "\\Matrículas");
     private static final File arquivoMatriculas = new File(pastaMatriculas + "\\matriculas.txt");
+    private static final File arquivoRFID = new File(pastaRegistrosDeAcesso + "\\rfID_Registrados.txt");
     static volatile boolean modoCadastrarIdAcesso = false;
     static String dispositivoIot = "Disp1";
     static String brokerUrl = "tcp://localhost:1883";  // Exemplo de
@@ -43,7 +45,53 @@ public class ControleAcessoSenai {
         conexaoMQTT.desconectar();
     }
 
+    static void salvarRFID() {
+        try (BufferedWriter buffWriter = new BufferedWriter(new FileWriter(arquivoRFID))) {
+            StringBuilder recebeRFID = new StringBuilder();
+            for (int linhaRFID = 0; linhaRFID < registrosRfID.length; linhaRFID++) {
+                if (!registrosRfID[linhaRFID].isBlank()) {
+                    recebeRFID.append(registrosRfID[linhaRFID]).append("\n");
+                }
+            }
+            buffWriter.write(recebeRFID.toString());
+        } catch (Exception ignored) {
+        }
+    }
+
+    static void carregarRFID() {
+        if (!arquivoRFID.exists()) {
+            System.out.println("Nenhum RFID registrado.");
+            return;
+        }
+        try (BufferedReader buffReader = new BufferedReader(new FileReader(arquivoRFID))) {
+            StringBuilder recebeRFID = new StringBuilder();
+            String linhaRFID;
+            while ((linhaRFID = buffReader.readLine()) != null) {
+                recebeRFID.append(linhaRFID).append("\n");
+            }
+            registrosRfID = recebeRFID.toString().split("\n");
+        } catch (Exception ignored) {
+        }
+    }
+
     private static void cadastrarNovoIdAcesso(String novoIdAcesso) {
+        modoCadastrarIdAcesso = true;
+
+        for (int linhaRfID = 0; linhaRfID < registrosRfID.length; linhaRfID++) {
+            if (registrosRfID[linhaRfID].trim().equals(novoIdAcesso)) {
+                System.out.println("TAG: " + novoIdAcesso + " já cadastrada. Processo finalizado sem sucesso.\n");
+                return;
+            } else if (!registrosRfID[linhaRfID].trim().equals(novoIdAcesso) && linhaRfID == registrosRfID.length - 1) {
+                String[] novoRegistroIDAcesso = new String[registrosRfID.length + 1];
+                for (linhaRfID = 0; linhaRfID < registrosRfID.length; linhaRfID++) {
+                    novoRegistroIDAcesso[linhaRfID] = registrosRfID[linhaRfID];
+                }
+                novoRegistroIDAcesso[novoRegistroIDAcesso.length - 1] = novoIdAcesso;
+                registrosRfID = novoRegistroIDAcesso;
+                salvarRFID();
+            }
+        }
+
         System.out.print("""
                 ---------------- CADASTRAR RF_ID -----------------
                 
@@ -55,7 +103,7 @@ public class ControleAcessoSenai {
         byte opcao = read.nextByte();
         escolhaOpcaoCerta(opcao);
         int id;
-        if(opcao == 1){
+        if (opcao == 1) {
             exibirFuncionarios();
             System.out.print("Digite o ID do usuário que deseja associar a tag: ");
             id = read.nextInt();
@@ -66,17 +114,15 @@ public class ControleAcessoSenai {
             id = read.nextInt();
             testeID(id, cadastroAlunos);
         }
-        conexaoMQTT.publicarMensagem(topico, dispositivoIot);
 
-        modoCadastrarIdAcesso = true;
-        System.out.println("TAG: " + novoIdAcesso + " associada com sucesso!");
-        if(opcao == 1){
+        if (opcao == 1) {
             cadastroFuncionarios[id][1] = novoIdAcesso;
             salvarCadastroFuncionarios();
         } else {
             cadastroAlunos[id][1] = novoIdAcesso;
             salvarCadastroAlunos();
         }
+        System.out.println("TAG: " + novoIdAcesso + " associada com sucesso.\n");
 
         conexaoMQTT.publicarMensagem("cadastro/disp", "CadastroConcluido");
     }
@@ -136,12 +182,12 @@ public class ControleAcessoSenai {
                 novaMatrizRegistro[linhaNovoRegistro][3] = Float.toString(verificarHora).replaceAll("\\.", " :");//             novaMatrizRegistro[linhaNovoRegistro][3] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
                 novaMatrizRegistro[linhaNovoRegistro][4] = cadastroFuncionarios[linhas][6];
 
-                if(verificarHora <= 13.40) {
+                if (verificarHora <= 13.40) {
                     System.out.printf("\nAcesso liberado: %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
-                } else if (verificarHora > 13.40 && verificarHora< 15.40){
-                    System.out.printf("\nAcesso liberado, %s atrasado.: %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][4],novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
+                } else if (verificarHora > 13.40 && verificarHora < 15.40) {
+                    System.out.printf("\nAcesso liberado, %s atrasado(a): %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][4], novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
                 } else {
-                    System.out.println("\nAcesso negado. Funcionário extremamente atrasado.");
+                    System.out.printf("\nAcesso negado. %s extremamente atrasado(a). Catraca bloqueada.\n", novaMatrizRegistro[linhaNovoRegistro][4]);
                 }
                 usuarioEncontrado = true; // Marca que o usuário foi encontrado
                 registrosDeAcesso = novaMatrizRegistro;
@@ -157,12 +203,12 @@ public class ControleAcessoSenai {
                 verificarHora = Float.parseFloat(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH.mm")));
                 novaMatrizRegistro[linhaNovoRegistro][3] = Float.toString(verificarHora).replaceAll("\\.", " :");
                 novaMatrizRegistro[linhaNovoRegistro][4] = "Aluno";
-                if(verificarHora <= 13.40) {
+                if (verificarHora <= 13.40) {
                     System.out.printf("\nAcesso liberado: %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
-                } else if (verificarHora > 13.40 && verificarHora< 15.40){
-                    System.out.printf("\nAcesso liberado, %s atrasado.: %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][4],novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
+                } else if (verificarHora > 13.40 && verificarHora < 15.40) {
+                    System.out.printf("\nAcesso liberado, %s atrasado(a).: %s - %s - %s - %s\n", novaMatrizRegistro[linhaNovoRegistro][4], novaMatrizRegistro[linhaNovoRegistro][0].trim(), novaMatrizRegistro[linhaNovoRegistro][1].trim(), novaMatrizRegistro[linhaNovoRegistro][3].trim(), novaMatrizRegistro[linhaNovoRegistro][4].trim());
                 } else {
-                    System.out.println("\nAcesso negado. Aluno extremamente atrasado.");
+                    System.out.println("\nAcesso negado. Aluno(a) extremamente atrasado(a).");
                 }
                 usuarioEncontrado = true; // Marca que o usuário foi encontrado
                 registrosDeAcesso = novaMatrizRegistro;
@@ -438,14 +484,15 @@ public class ControleAcessoSenai {
                             cargo = read.nextByte();
                         }
                         read.nextLine();
-                        switch (cargo) {
-                            case 1 -> recebeCadastro[usuario][secao] = "AQV";
-                            case 2 -> recebeCadastro[usuario][secao] = "Coordenador(a)";
-                            case 3 -> recebeCadastro[usuario][secao] = "Professor(a)";
-                            case 4 -> recebeCadastro[usuario][secao] = "Aux. ADM";
-                            case 5 -> recebeCadastro[usuario][secao] = "Segurança";
-                            case 6 -> recebeCadastro[usuario][secao] = "Faxineiro(a)";
-                        }
+                        recebeCadastro[usuario][secao] = switch (cargo) {
+                            case 1 -> "AQV";
+                            case 2 -> "Coordenador(a)";
+                            case 3 -> "Professor(a)";
+                            case 4 -> "Aux. ADM";
+                            case 5 -> "Segurança";
+                            case 6 -> "Faxineiro(a)";
+                            default -> throw new IllegalStateException("Unexpected value: " + cargo);
+                        };
                         qtdAQV = cargo == 1 ? ++qtdAQV : qtdAQV;
                         qtdCoord = cargo == 2 ? ++qtdCoord : qtdCoord;
                     } else if (qtdAQV == 1 && qtdCoord < 2) {
@@ -560,23 +607,23 @@ public class ControleAcessoSenai {
         String[] adicionarMatricula = new String[matriculas.length + 1];
 
         for (int linhaMatricula = 0; linhaMatricula < matriculas.length; linhaMatricula++) {
-           adicionarMatricula[linhaMatricula] = matriculas[linhaMatricula];
+            adicionarMatricula[linhaMatricula] = matriculas[linhaMatricula];
         }
 
-        while(matricula.length() != 8 || !matricula.matches("\\d{8}")){
+        while (matricula.length() != 8 || !matricula.matches("\\d{8}")) {
             System.out.println("A matrícula deve conter exatamente 8 números.");
             System.out.print("Digite a matrícula: ");
             matricula = read.nextLine();
         }
 
-        do{
-            if(!matricula.matches("\\d{8}") || matricula.length() !=8) {
+        do {
+            if (!matricula.matches("\\d{8}") || matricula.length() != 8) {
                 System.out.println("\nA matrícula deve conter exatamente 8 números.");
                 System.out.print("Digite a matrícula: ");
                 matricula = read.nextLine();
             }
             for (int linhaMatricula = 0; linhaMatricula < matriculas.length; linhaMatricula++) {
-                if(matricula.equals(matriculas[linhaMatricula])){
+                if (matricula.equals(matriculas[linhaMatricula])) {
                     System.out.println("\nOutro usuário com esta matrícula. Tente novamente.");
                     System.out.print("Matrícula: ");
                     matricula = read.nextLine();
@@ -753,6 +800,7 @@ public class ControleAcessoSenai {
         carregarCadastroFuncionarios();
         carregarRegistrosDeAcesso();
         carregarMatriculas();
+        carregarRFID();
     }
 
     private static void carregarCadastroAlunos() {
@@ -885,9 +933,17 @@ public class ControleAcessoSenai {
         }
 
         for (int linhaMatricula = 0; linhaMatricula < matriculas.length; linhaMatricula++) {
-            if(cadastro[id][5].trim().equals(matriculas[linhaMatricula])){
+            if (cadastro[id][5].trim().equals(matriculas[linhaMatricula])) {
                 matriculas[linhaMatricula] = null;
                 salvarMatriculas();
+                break;
+            }
+        }
+
+        for (int linhaRFID = 0; linhaRFID < registrosRfID.length; linhaRFID++) {
+            if (cadastro[id][1].trim().equals(registrosRfID[linhaRFID])) {
+                registrosRfID[linhaRFID] = null;
+                salvarRFID();
                 break;
             }
         }
@@ -1162,19 +1218,19 @@ public class ControleAcessoSenai {
         }
     }
 
-    private static void carregarMatriculas(){
-        if(!pastaMatriculas.exists()){
+    private static void carregarMatriculas() {
+        if (!pastaMatriculas.exists()) {
             pastaMatriculas.mkdir();
-            if(!arquivoMatriculas.exists()){
+            if (!arquivoMatriculas.exists()) {
                 System.out.println("Nenhuma matrícula encontrada.");
             }
             return;
         }
 
-        try(BufferedReader buffReader = new BufferedReader(new FileReader(arquivoMatriculas))){
+        try (BufferedReader buffReader = new BufferedReader(new FileReader(arquivoMatriculas))) {
             StringBuilder recebeMatriculas = new StringBuilder();
             String lerMatricula;
-            while((lerMatricula = buffReader.readLine()) != null){
+            while ((lerMatricula = buffReader.readLine()) != null) {
                 recebeMatriculas.append(lerMatricula).append("\n");
             }
 
@@ -1183,16 +1239,17 @@ public class ControleAcessoSenai {
         }
     }
 
-    private static void salvarMatriculas(){
-        try(BufferedWriter buffWriter = new BufferedWriter(new FileWriter(arquivoMatriculas))){
+    private static void salvarMatriculas() {
+        try (BufferedWriter buffWriter = new BufferedWriter(new FileWriter(arquivoMatriculas))) {
             StringBuilder recebeMatriculas = new StringBuilder();
             for (int linhaMatricula = 0; linhaMatricula < matriculas.length; linhaMatricula++) {
-                if(!matriculas[linhaMatricula].isBlank()) {
+                if (!matriculas[linhaMatricula].isBlank()) {
                     recebeMatriculas.append(matriculas[linhaMatricula]).append("\n");
                 }
             }
             buffWriter.write(recebeMatriculas.toString());
-        } catch (Exception ignored){}
+        } catch (Exception ignored) {
+        }
     }
 
 }
