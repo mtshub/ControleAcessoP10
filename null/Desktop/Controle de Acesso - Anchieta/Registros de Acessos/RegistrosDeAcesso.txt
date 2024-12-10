@@ -1,12 +1,5 @@
-RF_ID | Nome       | Matrícula                      | Hora                           | Cargo            |
-10211 |            |            26332881            |            14 :11              |            Profe |
-98742 |            |           10256677             |           16 :31               |           AQV    |
-98742 |        Tat |        10256677                |        16 :34                  |        AQV       |
-98742 |       Tati |       10256677                 |       16 :34                   |       AQV        |
-98742 |       Tati |       10256677                 |       16 :35                   |       AQV        |
-98742 |      Tatia |      10256677                  |      16 :37                    |      AQV         |
-98742 |     Tatian |     10256677                   |     16 :38                     |     AQV          |
-98742 |    Tatiana |    10256677                    |    16 :38                      |    AQV           |
-98742 |   Tatiana  |   10256677                     |   16 :39                       |   AQV            |
-32566 | Matheus de | 10252247         |             | 16 :42                         | Aluno            |
-02350 | Vitor de S | 11138888         |             | 16 :42                         | Aluno            |
+RF_ID      | Nome                           | Matrícula  | Hora       |  Cargo
+140423     | Matheus de Oliveira            | 10252247   | 23 :32     |  Aluno
+140423     | Matheus de Oliveira            | 10252247   | 23 :34     |  Aluno
+908766     | Miguel Magalhães               | 56811323   | 23 :36     |  Aluno
+987422     | Tatiana                        | 10256677   | 0:12       |  AQV

@@ -179,7 +179,7 @@ public class ControleAcessoSenai {
                 novaMatrizRegistro[linhaNovoRegistro][1] = cadastroFuncionarios[linhas][2];
                 novaMatrizRegistro[linhaNovoRegistro][2] = cadastroFuncionarios[linhas][5]; // Assume que o nome do usuário está na coluna 3
                 verificarHora = Float.parseFloat(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH.mm")));
-                novaMatrizRegistro[linhaNovoRegistro][3] = Float.toString(verificarHora).replaceAll("\\.", " :");//             novaMatrizRegistro[linhaNovoRegistro][3] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+                novaMatrizRegistro[linhaNovoRegistro][3] = Float.toString(verificarHora).replaceAll("\\.", ":");//             novaMatrizRegistro[linhaNovoRegistro][3] = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
                 novaMatrizRegistro[linhaNovoRegistro][4] = cadastroFuncionarios[linhas][6];
 
                 if (verificarHora <= 13.40) {
@@ -234,7 +234,8 @@ public class ControleAcessoSenai {
                     |           4- Exibir Cadastro.                 |
                     |           5- Buscar Por Usuário.              |
                     |           6- Cadastrar Nova Tag               |
-                    |           7- Limpar Tela.                     |
+                    |           7- Exibir Registros de Acesso       |
+                    |           8- Limpar Tela.                     |
                     |-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-|
                     |           0- Finalizar Programa.              |
                     -------------------------------------------------
@@ -263,6 +264,9 @@ public class ControleAcessoSenai {
                         aguardarCadastroDeIdAcesso();
                         break;
                     case 7:
+                        exibirRegistrosDeAcesso();
+                        break;
+                    case 8:
                         limparTela();
                         break;
                     case 0:
@@ -275,7 +279,7 @@ public class ControleAcessoSenai {
                         read.nextLine();
                         System.out.println();
                 }
-            } while (opcao < 0 || opcao > 7);
+            } while (opcao < 0 || opcao > 8);
         } while (opcao != 0);
         System.out.print("Salvando informações.");
         try {
@@ -653,11 +657,11 @@ public class ControleAcessoSenai {
 
     private static String formatarCadastro(String usuario, byte secao) {
         return switch (secao) {
-            case 0 -> String.format("%-5.5s |", usuario);
-            case 1 -> String.format(" %-10.10s |", usuario);
-            case 2, 3 -> String.format(" %-30.30s |", usuario);
-            case 4, 5 -> String.format(" %-16.16s |", usuario);
-            case 6 -> String.format(" %s%n", usuario);
+            case 0 -> String.format("%-5.5s |", usuario.trim());
+            case 1, 5 -> String.format(" %-10.10s |", usuario.trim());
+            case 2, 3 -> String.format(" %-30.30s |", usuario.trim());
+            case 4 -> String.format(" %-16.16s |", usuario.trim());
+            case 6 -> String.format(" %s%n", usuario.trim());
             default -> "";
         };
     }
@@ -739,12 +743,16 @@ public class ControleAcessoSenai {
         }
         System.out.print("Digite a matrícula a ser buscada: ");
         String matricula = read.nextLine();
-        testeMatricula(matricula);
+        while (matricula.length() != 8 || !matricula.matches("\\d{8}")) {
+            System.out.println("A matrícula deve conter exatamente 8 números.");
+            System.out.print("Digite a matrícula: ");
+            matricula = read.nextLine();
+        }
         boolean usuarioEncontrado = false;
         int idUsuario = 0;
 
         for (int usuario = 1; usuario < cadastro.length; usuario++) {
-            if (matricula.equalsIgnoreCase(cadastro[usuario][4])) {
+            if (cadastro[usuario][5].trim().equals(matricula)) {
                 usuarioEncontrado = true;
                 idUsuario = usuario;
                 break;
@@ -759,7 +767,6 @@ public class ControleAcessoSenai {
         } else {
             System.out.println("Matrícula não encontrada no sistema.\n");
         }
-
     }
 
     private static void salvarCadastroFuncionarios() {
@@ -824,7 +831,7 @@ public class ControleAcessoSenai {
             cadastroAlunos = new String[qtdAlunos.length][qtdAlunos[0].split("\\|").length];
 
             for (int linhaAluno = 0; linhaAluno < qtdAlunos.length; linhaAluno++) {
-                cadastroAlunos[linhaAluno] = qtdAlunos[linhaAluno].trim().split("\\| ");
+                cadastroAlunos[linhaAluno] = qtdAlunos[linhaAluno].trim().split("\\|");
             }
 
             System.out.println("\nCadastro de alunos carregado com sucesso!");
@@ -1171,8 +1178,8 @@ public class ControleAcessoSenai {
             pastaRegistrosDeAcesso.mkdir();
             if (!arquivoRegistrosDeAcesso.exists()) {
                 System.out.println("Nenhum registro de acesso encontrado.");
-                return;
             }
+            registrosDeAcesso[0] = cabecalhoRegistrosDeAcesso;
             return;
         }
         try (BufferedReader reader = new BufferedReader(new FileReader(arquivoRegistrosDeAcesso))) {
@@ -1209,12 +1216,14 @@ public class ControleAcessoSenai {
             StringBuilder recebeRegistros = new StringBuilder();
             for (int usuario = 0; usuario < registrosDeAcesso.length; usuario++) {
                 for (byte secaoAcesso = 0; secaoAcesso < registrosDeAcesso[0].length; secaoAcesso++) {
-                    switch (secaoAcesso){
-                        case 0, 2 -> recebeRegistros.append(String.format("%-10.10s |", registrosDeAcesso[usuario][secaoAcesso].trim()));
-                        case 1 -> recebeRegistros.append(String.format(" %-30.30s |", registrosDeAcesso[usuario][secaoAcesso].trim()));
-                        case 3 -> recebeRegistros.append(String.format(" %-8.8s |", registrosDeAcesso[usuario][secaoAcesso]));
-                        case 4 -> recebeRegistros.append(String.format(" %s", registrosDeAcesso[usuario][secaoAcesso])).append("\n");
-                    };
+                    switch (secaoAcesso) {
+                        case 0, 2, 3 ->
+                                recebeRegistros.append(String.format("%-10.10s | ", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                        case 1 ->
+                                recebeRegistros.append(String.format("%-30.30s | ", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                        case 4 ->
+                                recebeRegistros.append(String.format(" %s%n", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                    }
                 }
             }
             bufferedWriter.write(recebeRegistros.toString());
@@ -1256,4 +1265,20 @@ public class ControleAcessoSenai {
         }
     }
 
+    private static void exibirRegistrosDeAcesso() {
+        StringBuilder registros = new StringBuilder();
+        for (int registro = 0; registro < registrosDeAcesso.length; registro++) {
+            for (int secaoRegistro = 0; secaoRegistro < registrosDeAcesso[0].length; secaoRegistro++) {
+                switch (secaoRegistro) {
+                    case 0, 2, 3 ->
+                            registros.append(String.format("%-10.10s | ", registrosDeAcesso[registro][secaoRegistro].trim()));
+                    case 1 ->
+                            registros.append(String.format("%-30.30s | ", registrosDeAcesso[registro][secaoRegistro].trim()));
+                    case 4 ->
+                            registros.append(String.format(" %s\n", registrosDeAcesso[registro][secaoRegistro].trim()));
+                }
+            }
+        }
+        System.out.println(registros);
+    }
 }

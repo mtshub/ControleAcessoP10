@@ -1,10 +1,11 @@
-ID    | RF_ID      | Nome                           | Email                          | Telefone         | Matrícula        |
-1     | 325660     | Matheus de Oliveira            | matheusoliveira@gmail.com      | (11) 9 3365-5555 | 10252247         |
-2     | 023501     | Vitor de Souza                 | vitordesouza@gmail.com         | (11) 9 1123-3321 | 11138888         |
-3     | -          | Tarek Cintra                   | t4tekcintra@gmail.com          | (11) 9 5553-9422 | 69321500         |
-4     | -          | Miguel Magalhães               | migueleugim@gmail.com          | (11) 9 4563-9898 | 56811323         |
-5     | -          | Leonardo Ostheimer             | ostheimerleo@gmail.com         | (11) 9 1441-3665 | 87742213         |
-6     | -          | José Carlos                    | oijosé@gmail.com               | (11) 9 8665-2232 | 23651115         |
-7     | -          | Melissa Lourenço               | melissa@gmail.com              | (11) 6651-6633   | 42359987         |
-8     | -          | Lucas de Matos                 | matosdelucas@gmail.com         | (11) 9 7745-2211 | 21154333         |
-9     | -          | Pedro Dantas                   | dantasmamador@gmail.com        | (11) 9 8722-3369 | 69963214         |
+ID    | RF_ID      | Nome                           | Email                          | Telefone         | Matrícula  |
+1     | 140423     | Matheus de Oliveira            | matheusoliveira@gmail.com      | (11) 9 3365-5555 | 10252247   |
+2     | 023501     | Vitor de Souza                 | vitordesouza@gmail.com         | (11) 9 1123-3321 | 11138888   |
+3     | 809965     | Tarek Cintra                   | t4tekcintra@gmail.com          | (11) 9 5553-9422 | 69321500   |
+4     | 908766     | Miguel Magalhães               | migueleugim@gmail.com          | (11) 9 4563-9898 | 56811323   |
+5     | 577420     | Leonardo Ostheimer             | ostheimerleo@gmail.com         | (11) 9 1441-3665 | 87742213   |
+6     | 238756     | José Carlos                    | oijosé@gmail.com               | (11) 9 8665-2232 | 23651115   |
+7     | 102938     | Melissa Lourenço               | melissa@gmail.com              | (11) 9 6651-6633 | 42359987   |
+8     | 453627     | Lucas de Matos                 | matosdelucas@gmail.com         | (11) 9 7745-2211 | 21154333   |
+9     | 699669     | Pedro Dantas                   | dantasmamador@gmail.com        | (11) 9 8722-3369 | 69963214   |
+10    | 142408     | Luana de Oliveira              | lu4naoliv@gmail.com            | (11) 9 9455-0876 | 14042023   |
