@@ -1209,9 +1209,13 @@ public class ControleAcessoSenai {
             StringBuilder recebeRegistros = new StringBuilder();
             for (int usuario = 0; usuario < registrosDeAcesso.length; usuario++) {
                 for (byte secaoAcesso = 0; secaoAcesso < registrosDeAcesso[0].length; secaoAcesso++) {
-                    recebeRegistros.append(formatarCadastro(registrosDeAcesso[usuario][secaoAcesso], secaoAcesso));
+                    switch (secaoAcesso){
+                        case 0, 2 -> recebeRegistros.append(String.format("%-10.10s |", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                        case 1 -> recebeRegistros.append(String.format(" %-30.30s |", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                        case 3 -> recebeRegistros.append(String.format(" %-8.8s |", registrosDeAcesso[usuario][secaoAcesso]));
+                        case 4 -> recebeRegistros.append(String.format(" %s", registrosDeAcesso[usuario][secaoAcesso])).append("\n");
+                    };
                 }
-                recebeRegistros.append("\n");
             }
             bufferedWriter.write(recebeRegistros.toString());
         } catch (Exception ignored) {
