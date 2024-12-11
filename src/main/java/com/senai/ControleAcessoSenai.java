@@ -235,7 +235,8 @@ public class ControleAcessoSenai {
                     |           5- Buscar Por Usuário.              |
                     |           6- Cadastrar Nova Tag               |
                     |           7- Exibir Registros de Acesso       |
-                    |           8- Limpar Tela.                     |
+                    |           8- Pesquisar Acessos de Usuário     |
+                    |           9- Limpar Tela.                     |
                     |-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-|
                     |           0- Finalizar Programa.              |
                     -------------------------------------------------
@@ -267,6 +268,9 @@ public class ControleAcessoSenai {
                         exibirRegistrosDeAcesso();
                         break;
                     case 8:
+                        pesquisarRegistrosDeAcesso();
+                        break;
+                    case 9:
                         limparTela();
                         break;
                     case 0:
@@ -279,7 +283,7 @@ public class ControleAcessoSenai {
                         read.nextLine();
                         System.out.println();
                 }
-            } while (opcao < 0 || opcao > 8);
+            } while (opcao < 0 || opcao > 9);
         } while (opcao != 0);
         System.out.print("Salvando informações.");
         try {
@@ -1222,7 +1226,7 @@ public class ControleAcessoSenai {
                         case 1 ->
                                 recebeRegistros.append(String.format("%-30.30s | ", registrosDeAcesso[usuario][secaoAcesso].trim()));
                         case 4 ->
-                                recebeRegistros.append(String.format(" %s%n", registrosDeAcesso[usuario][secaoAcesso].trim()));
+                                recebeRegistros.append(String.format("%s%n", registrosDeAcesso[usuario][secaoAcesso].trim()));
                     }
                 }
             }
@@ -1275,10 +1279,101 @@ public class ControleAcessoSenai {
                     case 1 ->
                             registros.append(String.format("%-30.30s | ", registrosDeAcesso[registro][secaoRegistro].trim()));
                     case 4 ->
-                            registros.append(String.format(" %s\n", registrosDeAcesso[registro][secaoRegistro].trim()));
+                            registros.append(String.format("%s\n", registrosDeAcesso[registro][secaoRegistro].trim()));
                 }
             }
         }
         System.out.println(registros);
+    }
+
+    private static void pesquisarAcessosPorNome() {
+        System.out.print("Digite o nome do usuário: ");
+        String nome = read.nextLine();
+        StringBuilder usuarios = new StringBuilder();
+        boolean usuarioEncontrado = false;
+
+        for (int usuario = 1; usuario < registrosDeAcesso.length; usuario++) {
+            if (nome.split(" ").length > 1 && nome.equalsIgnoreCase(registrosDeAcesso[usuario][1].trim())) {
+                usuarioEncontrado = true;
+                for (int secao = 0; secao < registrosDeAcesso[0].length; secao++) {
+                    switch (secao) {
+                        case 0, 2, 3 ->
+                                usuarios.append(String.format("%-10.10s | ", registrosDeAcesso[usuario][secao].trim()));
+                        case 1 -> usuarios.append(String.format("%-30.30s | ", registrosDeAcesso[usuario][1].trim()));
+                        case 4 -> usuarios.append(String.format("%s%n", registrosDeAcesso[usuario][4].trim()));
+                    }
+                }
+            } else if (nome.split(" ").length == 1 && nome.equalsIgnoreCase(registrosDeAcesso[usuario][1].trim().split(" ")[0])) {
+                usuarioEncontrado = true;
+                for (int secao = 0; secao < registrosDeAcesso[0].length; secao++) {
+                    switch (secao) {
+                        case 0, 2, 3 ->
+                                usuarios.append(String.format("%-10.10s | ", registrosDeAcesso[usuario][secao].trim()));
+                        case 1 -> usuarios.append(String.format("%-30.30s | ", registrosDeAcesso[usuario][1].trim()));
+                        case 4 -> usuarios.append(String.format("%s%n", registrosDeAcesso[usuario][4].trim()));
+                    }
+                }
+            }
+        }
+
+        System.out.println();
+
+        if (usuarioEncontrado) {
+            System.out.println("Registros encontrados para o nome '" + nome + "':");
+            System.out.printf("%-10.10s | %-30.30s | %-10.10s | %-10.10s | %s%n", registrosDeAcesso[0]);
+            System.out.println(usuarios);
+        } else {
+            System.out.println("Nenhum registro encontrado.\n");
+        }
+    }
+
+    private static void pesquisarAcessosPorTag(){
+        System.out.print("Digite o número da tag: ");
+        String tag = read.nextLine();
+        StringBuilder usuario = new StringBuilder();
+        boolean usuarioEncontrado = false;
+
+        System.out.println();
+
+        for (int linhaUsuario = 1; linhaUsuario < registrosDeAcesso.length; linhaUsuario++) {
+            if(tag.equals(registrosDeAcesso[linhaUsuario][0].trim())){
+                usuarioEncontrado = true;
+                for (int secao = 0; secao < registrosDeAcesso[0].length; secao++) {
+                    switch (secao) {
+                        case 0, 2, 3 ->
+                                usuario.append(String.format("%-10.10s | ", registrosDeAcesso[linhaUsuario][secao].trim()));
+                        case 1 -> usuario.append(String.format("%-30.30s | ", registrosDeAcesso[linhaUsuario][1].trim()));
+                        case 4 -> usuario.append(String.format("%s%n", registrosDeAcesso[linhaUsuario][4].trim()));
+                    }
+                }
+            }
+        }
+
+        if (usuarioEncontrado) {
+            System.out.println("Registros encontrados para a TAG '" + tag + "':");
+            System.out.printf("%-10.10s | %-30.30s | %-10.10s | %-10.10s | %s%n", registrosDeAcesso[0]);
+            System.out.println(usuario);
+        } else {
+            System.out.println("Nenhum registro encontrado.\n");
+        }
+    }
+
+    private static void pesquisarRegistrosDeAcesso(){
+        System.out.print("""
+                ---------- PESQUISAR REGISTROS ----------
+                Você deseja pesquisar os registros por:
+                
+                        1. Nome | 2. Tag
+                
+                Escolha:\s""");
+        byte opcao = read.nextByte();
+        escolhaOpcaoCerta(opcao);
+        read.nextLine();
+        System.out.println();
+        if(opcao == 1){
+            pesquisarAcessosPorNome();
+        } else {
+            pesquisarAcessosPorTag();
+        }
     }
 }

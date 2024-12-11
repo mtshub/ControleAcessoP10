@@ -1,5 +1,6 @@
-RF_ID      | Nome                           | Matrícula  | Hora       |  Cargo
-140423     | Matheus de Oliveira            | 10252247   | 23 :32     |  Aluno
-140423     | Matheus de Oliveira            | 10252247   | 23 :34     |  Aluno
-908766     | Miguel Magalhães               | 56811323   | 23 :36     |  Aluno
-987422     | Tatiana                        | 10256677   | 0:12       |  AQV
+RF_ID      | Nome                           | Matrícula  | Hora       | Cargo
+140423     | Matheus de Oliveira            | 10252247   | 23 :32     | Aluno
+140423     | Matheus de Oliveira            | 10252247   | 23 :34     | Aluno
+908766     | Miguel Magalhães               | 56811323   | 23 :36     | Aluno
+987422     | Tatiana                        | 10256677   | 0:12       | AQV
+023501     | Vitor de Souza                 | 11138888   | 22 :27     | Aluno
